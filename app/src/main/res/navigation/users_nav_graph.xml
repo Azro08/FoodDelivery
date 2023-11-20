@@ -9,7 +9,11 @@
         android:id="@+id/userHomeFragment"
         android:name="com.example.fooddelivery.ui.user.home.UserHomeFragment"
         android:label="fragment_user_home"
-        tools:layout="@layout/fragment_user_home" />
+        tools:layout="@layout/fragment_user_home" >
+        <action
+            android:id="@+id/nav_foodlist_to_details"
+            app:destination="@id/foodDetailsFragment" />
+    </fragment>
     <fragment
         android:id="@+id/cartFragment"
         android:name="com.example.fooddelivery.ui.user.cart.CartFragment"
@@ -25,4 +29,9 @@
         android:name="com.example.fooddelivery.ui.user.profile.ProfileFragment"
         android:label="fragment_profile"
         tools:layout="@layout/fragment_profile" />
+    <dialog
+        android:id="@+id/foodDetailsFragment"
+        android:name="com.example.fooddelivery.ui.user.food_details.FoodDetailsFragment"
+        android:label="fragment_food_details"
+        tools:layout="@layout/fragment_food_details" />
 </navigation>

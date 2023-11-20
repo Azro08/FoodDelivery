@@ -33,9 +33,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         supportActionBar?.hide()
 
+        if (firebaseAuth.currentUser?.uid == null) logout()
+
         if (!authManager.isLoggedIn()) {
-            startActivity(Intent(this, AuthActivity::class.java))
-            this.finish()
+            logout()
         } else getRole()
         setBottomNavBar()
     }
@@ -79,6 +80,10 @@ class MainActivity : AppCompatActivity() {
         binding.usersNavView.setupWithNavController(navController)
     }
 
+    private fun logout() {
+        startActivity(Intent(this, AuthActivity::class.java))
+        this.finish()
+    }
 
     override fun onDestroy() {
         super.onDestroy()

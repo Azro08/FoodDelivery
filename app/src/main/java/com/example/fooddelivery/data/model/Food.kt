@@ -8,3 +8,11 @@ data class Food(
     val price : Double = 0.0,
     val image : String = ""
 )
+
+fun List<String>.ingredientsToString() : String {
+    var ingredients = ""
+    forEach {
+        if (it != null) ingredients += "$it, "
+    }
+    return ingredients.dropLast(2)
+}

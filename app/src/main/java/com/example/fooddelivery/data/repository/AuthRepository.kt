@@ -37,7 +37,7 @@ class AuthRepository @Inject constructor(
             firebaseAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        deferred.complete("Done")
+                        deferred.complete(task.result.user?.uid ?: "")
                     } else {
                         val errorMessage = task.exception?.message ?: "Unknown error"
                         deferred.complete(errorMessage)

@@ -40,20 +40,19 @@ class SignupFragment : Fragment() {
         }
     }
 
+    private fun createUserCart(uid: String) {
+        lifecycleScope.launch {
+            viewModel.createUserCart(uid)
+        }
+    }
+
     private fun signUp() {
         lifecycleScope.launch {
             val email = binding.editTextEmail.text.toString()
             val password = binding.editTextPassword.text.toString()
             viewModel.signUp(email, password)
             viewModel.signedUp.collect { result ->
-                if (result == "Done") Toast.makeText(
-                    requireContext(),
-                    "User registered",
-                    Toast.LENGTH_SHORT
-                ).show()
-                else {
-                    Toast.makeText(requireContext(), result, Toast.LENGTH_SHORT).show()
-                }
+                if (result.isNotBlank()) createUserCart(result)
             }
         }
     }

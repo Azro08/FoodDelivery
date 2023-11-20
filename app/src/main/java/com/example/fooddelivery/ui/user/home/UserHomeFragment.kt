@@ -5,17 +5,22 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.fooddelivery.R
 import com.example.fooddelivery.data.model.Food
 import com.example.fooddelivery.data.model.FoodCategory
 import com.example.fooddelivery.databinding.FragmentUserHomeBinding
 import com.example.fooddelivery.ui.user.home.adapter.CategoryRvAdapter
 import com.example.fooddelivery.ui.user.home.adapter.FoodRvAdapter
+import com.example.fooddelivery.util.Constants
 import com.ivkorshak.el_diaries.util.ScreenState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -43,10 +48,10 @@ class UserHomeFragment : Fragment() {
     private fun getFoodCategories() {
         lifecycleScope.launch {
             viewModel.categoryList.collect { state ->
-                when (state){
+                when (state) {
                     is ScreenState.Loading -> {}
                     is ScreenState.Error -> handleError(state.message.toString())
-                    is ScreenState.Success ->{
+                    is ScreenState.Success -> {
                         if (state.data.isNullOrEmpty()) handleError(state.message.toString())
                         else displayCategories(state.data)
                     }
@@ -70,10 +75,10 @@ class UserHomeFragment : Fragment() {
         lifecycleScope.launch {
             viewModel.getFoodList(category)
             viewModel.foodList.collect { state ->
-                when (state){
+                when (state) {
                     is ScreenState.Loading -> {}
                     is ScreenState.Error -> handleError(state.message.toString())
-                    is ScreenState.Success ->{
+                    is ScreenState.Success -> {
                         if (state.data.isNullOrEmpty()) handleError(state.message.toString())
                         else displayFoodList(state.data)
                     }
@@ -83,10 +88,29 @@ class UserHomeFragment : Fragment() {
     }
 
     private fun displayFoodList(foodList: List<Food>) {
-        foodRvAdapter = FoodRvAdapter(foodList, {}, {})
+        foodRvAdapter = FoodRvAdapter(foodList, { addItemToCart(it) }, { navToDetails(it.id) })
         binding.rvFood.setHasFixedSize(true)
         binding.rvFood.layoutManager = GridLayoutManager(requireContext(), 2)
         binding.rvFood.adapter = foodRvAdapter
+    }
+
+    private fun navToDetails(foodId: String) {
+        Log.d("FoodList", "food $foodId")
+        findNavController().navigate(R.id.nav_foodlist_to_details, bundleOf(Pair(Constants.FOOD_ID, foodId)))
+    }
+
+    private fun addItemToCart(food: Food) {
+        lifecycleScope.launch {
+            viewModel.addToCart(food)
+            viewModel.addedToCart.collect {
+                if (it == "Done") Toast.makeText(
+                    requireContext(),
+                    "Added to cart",
+                    Toast.LENGTH_SHORT
+                ).show()
+                else Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun handleError(msg: String) {

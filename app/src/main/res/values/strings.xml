@@ -15,4 +15,5 @@
     <string name="re_password">Re-Password</string>
     <string name="signup">signup</string>
     <string name="logout">Logout</string>
+    <string name="add_to_cart">ADD To Cart</string>
 </resources>

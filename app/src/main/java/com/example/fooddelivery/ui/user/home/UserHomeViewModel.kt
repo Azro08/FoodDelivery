@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fooddelivery.data.model.Food
 import com.example.fooddelivery.data.model.FoodCategory
+import com.example.fooddelivery.data.repository.CartRepository
 import com.example.fooddelivery.data.repository.FoodCategoryRepository
 import com.example.fooddelivery.data.repository.FoodRepository
 import com.ivkorshak.el_diaries.util.ScreenState
@@ -15,7 +16,8 @@ import javax.inject.Inject
 @HiltViewModel
 class UserHomeViewModel @Inject constructor(
     private val foodRepository: FoodRepository,
-    private val categoryRepository: FoodCategoryRepository
+    private val categoryRepository: FoodCategoryRepository,
+    private val cartRepository: CartRepository
 ) : ViewModel() {
 
     private val _foodList = MutableStateFlow<ScreenState<List<Food>?>>(ScreenState.Loading())
@@ -25,11 +27,14 @@ class UserHomeViewModel @Inject constructor(
         MutableStateFlow<ScreenState<List<FoodCategory>?>>(ScreenState.Loading())
     val categoryList = _categoryList
 
+    private val _addedToCart = MutableStateFlow("")
+    val addedToCart = _addedToCart
+
     init {
         getCategoriesList()
     }
 
-    fun refreshFoodList(category : String) {
+    fun refreshFoodList(category: String) {
         getFoodList(category)
     }
 
@@ -46,7 +51,7 @@ class UserHomeViewModel @Inject constructor(
         }
     }
 
-    fun getFoodList(category : String) = viewModelScope.launch {
+    fun getFoodList(category: String) = viewModelScope.launch {
         try {
             foodRepository.getFoodList(category).let {
                 if (it.isNullOrEmpty())
@@ -59,5 +64,13 @@ class UserHomeViewModel @Inject constructor(
         }
     }
 
-
+    fun addToCart(food: Food) = viewModelScope.launch {
+        try {
+            cartRepository.addFoodToCart(food).let {
+                _addedToCart.value = it
+            }
+        } catch (e: Exception) {
+            _addedToCart.value = e.message.toString()
+        }
+    }
 }
