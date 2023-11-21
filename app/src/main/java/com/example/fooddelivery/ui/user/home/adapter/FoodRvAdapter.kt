@@ -1,5 +1,6 @@
 package com.example.fooddelivery.ui.user.home.adapter
 
+import android.annotation.SuppressLint
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -10,7 +11,7 @@ import com.example.fooddelivery.data.model.Food
 import com.example.fooddelivery.databinding.FoodItemBinding
 
 class FoodRvAdapter(
-    private val foodList: List<Food>,
+    private var foodList: List<Food>,
     private val cartListener: (food: Food) -> Unit,
     private val itemListener: (food: Food) -> Unit
 ) : RecyclerView.Adapter<FoodRvAdapter.FoodViewHolder>() {
@@ -53,6 +54,12 @@ class FoodRvAdapter(
 
     override fun onBindViewHolder(holder: FoodViewHolder, position: Int) {
         holder.bind(foodList[position])
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun updateFoodList(newFoodList: List<Food>) {
+        foodList = newFoodList.toMutableList()
+        notifyDataSetChanged()
     }
 
 

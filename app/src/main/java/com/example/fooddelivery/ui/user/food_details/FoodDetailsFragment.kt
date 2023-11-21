@@ -42,7 +42,7 @@ class FoodDetailsFragment : DialogFragment() {
                     "Added to cart",
                     Toast.LENGTH_SHORT
                 ).show()
-                else Toast.makeText(requireContext(), "Error", Toast.LENGTH_SHORT).show()
+                else Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -62,7 +62,7 @@ class FoodDetailsFragment : DialogFragment() {
                     is ScreenState.Success -> {
                         if (state.data != null) {
                             displayDetails(state.data)
-                            binding.buttonAddToCart.setOnClickListener {addToCart(state.data)}
+                            binding.buttonAddToCart.setOnClickListener { addToCart(state.data) }
                         }
                     }
 
@@ -78,7 +78,7 @@ class FoodDetailsFragment : DialogFragment() {
         textViewDetailsName.text = food.name
         textViewDetailsIngredients.text = food.ingredients.ingredientsToString()
         val priceString = String.format("%.2f", food.price)
-        val priceTag ="$$priceString"
+        val priceTag = "$$priceString"
         textViewDetailsPrice.text = priceTag
     }
 

@@ -27,6 +27,25 @@ class CartRepository @Inject constructor(
         }
     }
 
+    suspend fun getUsersCart(): List<Food> {
+        val userId = firebaseAuth.currentUser?.uid ?: ""
+
+        return try {
+            val cartRef = cartCollection.document(userId)
+            val cartDocument = cartRef.get().await()
+
+            if (cartDocument.exists()) {
+                val cartData = cartDocument.toObject(Cart::class.java)
+                cartData?.foodList ?: emptyList()
+            } else {
+                emptyList()
+            }
+        } catch (e: Exception) {
+            Log.d("CartRepository", "Error getting food list from cart: $e")
+            emptyList()
+        }
+    }
+
     suspend fun addFoodToCart(food: Food): String {
         return try {
             val cartRef = cartCollection.document(userId)
@@ -48,42 +67,44 @@ class CartRepository @Inject constructor(
 
     }
 
-    suspend fun getUsersCart(): List<Food> {
-        return try {
-            val documentSnapshot = cartCollection.document(userId).get().await()
-            if (documentSnapshot.exists()) {
-                val foods = documentSnapshot.toObject(Cart::class.java)?.foodList ?: emptyList()
+    suspend fun deleteFoodFromCart(foodId: String): String {
+        val userId = firebaseAuth.currentUser?.uid ?: ""
 
-                val foodList = mutableListOf<Food>()
-
-                val foodsCollection = firestore.collection("food")
-
-                for (foodItem in foods) {
-                    val foodDocSnapshot = foodsCollection.document(userId).get().await()
-                    if (foodDocSnapshot.exists()) {
-                        val food = foodDocSnapshot.toObject(Food::class.java)
-                        food?.let { foodList.add(it) }
-                    }
-                }
-
-                foodList
-            } else {
-                emptyList()
-            }
-        } catch (e: FirebaseException) {
-            emptyList()
-        }
-    }
-
-
-    suspend fun deleteFoodFromCart(food: Food): String {
         return try {
             val cartRef = cartCollection.document(userId)
-            cartRef.update("foodList", FieldValue.arrayRemove(food)).await()
-            "Done"
-        } catch (e: FirebaseException) {
-            e.message.toString()
+
+            // Fetch the current list of food items
+            val cartDocument = cartRef.get().await()
+            val cartData = cartDocument.toObject(Cart::class.java)
+            val currentFoodList = cartData?.foodList ?: emptyList()
+
+            // Remove the specific food item by ID
+            val updatedFoodList = currentFoodList.filter { it.id != foodId }
+
+            // Update the cart document with the modified food list
+            cartRef.update("foodList", updatedFoodList).await()
+
+            "Food deleted from cart successfully"
+        } catch (e: Exception) {
+            Log.d("CartRepository", "Error deleting food from cart: $e")
+            "Failed to delete food from cart"
         }
     }
+
+    suspend fun clearCart(): String {
+        val userId = firebaseAuth.currentUser?.uid ?: ""
+
+        return try {
+            val cartRef = cartCollection.document(userId)
+
+            cartRef.update("foodList", FieldValue.delete()).await()
+
+            "Done"
+        } catch (e: Exception) {
+            Log.d("CartRepository", "Error deleting all items from cart: $e")
+            "Failed to delete all items from cart"
+        }
+    }
+
 
 }

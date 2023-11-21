@@ -38,6 +38,19 @@ class UserHomeViewModel @Inject constructor(
         getFoodList(category)
     }
 
+    fun filterFoodList(query: String): List<Food> {
+        return when (val currentState = foodList.value) {
+            is ScreenState.Success -> {
+                currentState.data?.filter { food ->
+                    food.name.contains(query, ignoreCase = true)
+                } ?: emptyList()
+            }
+
+            else -> emptyList()
+        }
+    }
+
+
     private fun getCategoriesList() = viewModelScope.launch {
         try {
             categoryRepository.getCategoryList().let {

@@ -52,7 +52,10 @@ class SignupFragment : Fragment() {
             val password = binding.editTextPassword.text.toString()
             viewModel.signUp(email, password)
             viewModel.signedUp.collect { result ->
-                if (result.isNotBlank()) createUserCart(result)
+                if (result.isNotBlank()) {
+                    Toast.makeText(requireContext(), result, Toast.LENGTH_SHORT).show()
+                    createUserCart(result)
+                }
             }
         }
     }

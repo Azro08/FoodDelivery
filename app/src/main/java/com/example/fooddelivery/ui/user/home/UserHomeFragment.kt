@@ -1,6 +1,8 @@
 package com.example.fooddelivery.ui.user.home
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -32,6 +34,7 @@ class UserHomeFragment : Fragment() {
     private val viewModel: UserHomeViewModel by viewModels()
     private var categoryRvAdapter: CategoryRvAdapter? = null
     private var foodRvAdapter: FoodRvAdapter? = null
+    private var category = "all"
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -42,8 +45,32 @@ class UserHomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         getFoodCategories()
-        getFoodList("all")
+        getFoodList()
+        search()
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            viewModel.refreshFoodList(category)
+            binding.swipeRefreshLayout.isRefreshing = false
+        }
     }
+
+    private fun search() {
+        binding.editTextSearchFood.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+            override fun afterTextChanged(s: Editable?) {
+                val searchText = s.toString().trim()
+                performSearch(searchText)
+            }
+        })
+    }
+
+    private fun performSearch(query: String) {
+        val filteredList = viewModel.filterFoodList(query)
+        foodRvAdapter?.updateFoodList(filteredList)
+    }
+
 
     private fun getFoodCategories() {
         lifecycleScope.launch {
@@ -63,7 +90,8 @@ class UserHomeFragment : Fragment() {
     private fun displayCategories(foodCategories: List<FoodCategory>) {
         Log.d("FoodList", "food ${foodCategories.size}")
         categoryRvAdapter = CategoryRvAdapter(foodCategories) {
-            getFoodList(it.strCategory)
+            category = it.strCategory
+            getFoodList()
         }
         binding.rvFoodCategory.setHasFixedSize(true)
         binding.rvFoodCategory.layoutManager =
@@ -71,7 +99,7 @@ class UserHomeFragment : Fragment() {
         binding.rvFoodCategory.adapter = categoryRvAdapter
     }
 
-    private fun getFoodList(category: String) {
+    private fun getFoodList() {
         lifecycleScope.launch {
             viewModel.getFoodList(category)
             viewModel.foodList.collect { state ->
@@ -96,7 +124,10 @@ class UserHomeFragment : Fragment() {
 
     private fun navToDetails(foodId: String) {
         Log.d("FoodList", "food $foodId")
-        findNavController().navigate(R.id.nav_foodlist_to_details, bundleOf(Pair(Constants.FOOD_ID, foodId)))
+        findNavController().navigate(
+            R.id.nav_foodlist_to_details,
+            bundleOf(Pair(Constants.FOOD_ID, foodId))
+        )
     }
 
     private fun addItemToCart(food: Food) {
